@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class PlayerMelee : MonoBehaviour {
+public class PlayerMelee : NetworkBehaviour {
 
     public Animator SwordAnim;
     
@@ -25,10 +26,18 @@ public class PlayerMelee : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
     {
-        CheckInput();
+
+        if (!isLocalPlayer)
+        {
+            // exit from update if this is not the local player
+            return;
+        }
+
+        CmdCheckInput();
 	}
 
-    void CheckInput()
+    [Command]
+    void CmdCheckInput()
     {
         Vector3 SwingDir = new Vector3(Input.GetAxisRaw("Mouse X"),  // X    
                                                0,                            // Y
@@ -36,16 +45,17 @@ public class PlayerMelee : MonoBehaviour {
 
         if (Input.GetButton("Fire1"))
         {
-            CheckSwingDirection(SwingDir);
+            CmdCheckSwingDirection(SwingDir);
         }
 
         if (Input.GetButtonUp("Fire1"))
         {
-            Swing();
+            CmdSwing();
         }
     }
 
-    void CheckSwingDirection(Vector3 SwingDir)
+    [Command]
+    void CmdCheckSwingDirection(Vector3 SwingDir)
     {
         if (SwingDir.x < 0)
             CurrSwingDirection = (int)SWINGDIRECTION.LEFT;
@@ -61,7 +71,8 @@ public class PlayerMelee : MonoBehaviour {
             CurrSwingDirection = (int)SWINGDIRECTION.DEFAULT;
     }
 
-    void Swing()
+    [Command]
+    void CmdSwing()
     {
         if (CurrSwingDirection == (int)SWINGDIRECTION.LEFT)
             Debug.Log("LEFT SWING");
@@ -74,7 +85,7 @@ public class PlayerMelee : MonoBehaviour {
             Debug.Log("DOWN SWING");
 
         if (CurrSwingDirection == (int)SWINGDIRECTION.DEFAULT)
-            Debug.Log("DEFAULT SWING");
+            SwordAnim.SetTrigger("DefaultSwing");
     }
 
 }
